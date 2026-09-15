@@ -485,7 +485,8 @@ body.mobile .home-head{padding-top:6px}
 .profile-row .vip{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.18);backdrop-filter:blur(4px);font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;margin-top:7px}
 .profile-row .vip .star{color:#FFE9A8}
 .profile-stats{display:flex;margin-top:14px;gap:0;background:rgba(255,255,255,.14);backdrop-filter:blur(4px);border-radius:14px;padding:11px 0}
-.profile-stats .st{flex:1;text-align:center}
+.profile-stats .st{flex:1;text-align:center;cursor:pointer;position:relative;transition:opacity .2s}
+.profile-stats .st:active{opacity:.7}
 .profile-stats .st b{font-size:18px;font-weight:900;display:block}
 .profile-stats .st span{font-size:10.5px;opacity:.85;margin-top:3px;display:block}
 .profile-grid{position:relative;z-index:5;margin-top:-34px;margin-left:16px;margin-right:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:#fff;border-radius:18px;box-shadow:var(--shadow);padding:16px 6px}
@@ -501,6 +502,18 @@ body.mobile .home-head{padding-top:6px}
 .menu-item .lb{font-size:14px;font-weight:600;flex:1}
 .menu-item .val{font-size:12px;color:var(--txt3)}
 .menu-item .arr{color:var(--gray-light);font-size:14px}
+
+/* 优惠券-券包类型 */
+.cp-voucher{position:relative;border-radius:16px;overflow:hidden;margin-bottom:12px;background:#fff}
+.cp-voucher .cpv-top{display:flex;align-items:center;gap:12px;padding:16px 16px;border:1.5px dashed #FFB37A;border-bottom:none;border-radius:16px 16px 0 0;background:linear-gradient(135deg,#FFF6EC,#FFEFE1)}
+.cp-voucher .cpv-ic{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#FF8A2A,#FF5A36);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.cp-voucher .cpv-mid{flex:1;min-width:0}
+.cp-voucher .cpv-name{font-size:14px;font-weight:800}
+.cp-voucher .cpv-cond{font-size:11px;color:var(--txt3);margin-top:3px}
+.cp-voucher .cpv-val{font-size:26px;font-weight:900;color:var(--orange)}
+.cp-voucher .cpv-val small{font-size:13px;font-weight:700}
+.cp-voucher .cpv-bot{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border:1.5px dashed #FFB37A;border-top:none;border-radius:0 0 16px 16px}
+.cp-voucher .cpv-exp{font-size:11px;color:var(--txt3)}
 .page-body.mine-pad{padding-bottom:120px}
 
 /* ===== 预约 ===== */
@@ -1437,10 +1450,10 @@ textarea.f-input{min-height:84px;resize:none;line-height:1.6}
               </div>
             </div>
             <div class="profile-stats">
-              <div class="st"><b>8,860</b><span>成长值</span></div>
-              <div class="st"><b>26</b><span>积点</span></div>
-              <div class="st"><b>12</b><span>剩余卡次</span></div>
-              <div class="st"><b>3</b><span>优惠券</span></div>
+              <div class="st" onclick="show('growthDetail')"><b>8,860</b><span>成长值</span></div>
+              <div class="st" onclick="show('pointsDetail')"><b>26</b><span>积点</span></div>
+              <div class="st" onclick="show('cardbag')"><b id="profileCards">12</b><span>剩余卡次</span></div>
+              <div class="st" onclick="show('couponList')"><b>3</b><span>优惠券</span></div>
             </div>
           </div>
           <div class="profile-grid">
@@ -1718,6 +1731,25 @@ textarea.f-input{min-height:84px;resize:none;line-height:1.6}
         </div>
       </div>
 
+      <!-- ================= 改期弹窗 ================= -->
+      <div class="sheet" id="rescheduleSheet" onclick="if(event.target===this)closeSheet('rescheduleSheet')">
+        <div class="panel" style="max-height:85vh;overflow-y:auto">
+          <div class="grab"></div>
+          <div style="text-align:center;font-size:17px;font-weight:900;margin-top:4px">改期预约</div>
+          <div style="background:#FFF8EF;border:1px solid #FFE3C4;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:12px;color:#B45A0B;line-height:1.6" id="reschOrigInfo">原预约信息</div>
+          <div style="margin-top:4px;font-size:11.5px;color:#E8456B;background:#FFF0F2;border:1px solid #FFE0E5;border-radius:8px;padding:7px 11px" id="reschRuleTip">⏰ 改期须至少提前 2 小时操作</div>
+          <div style="margin-top:16px;font-size:14px;font-weight:800">选择日期</div>
+          <div class="cal-week" id="reschCalWeek" style="margin-top:8px"></div>
+          <div style="margin-top:16px;font-size:14px;font-weight:800">选择时段 <span style="font-size:11px;color:var(--txt3);font-weight:500">（每个时段 60 分钟）</span></div>
+          <div class="time-grid" id="reschTimeGrid" style="margin-top:8px"></div>
+          <div class="tips-box" style="margin-top:10px;display:none;background:#FFF0F2;border-color:#FFE0E5;color:#E8456B" id="reschConflictTip">⛔ 该时段已被预约，请选择其他时段。</div>
+          <div style="display:flex;gap:10px;margin-top:18px">
+            <button class="btn-ghost" style="flex:1;padding:13px 0" onclick="closeSheet('rescheduleSheet')">取消</button>
+            <button class="btn-primary" style="flex:1;padding:13px 0" id="reschConfirmBtn" onclick="confirmReschedule()" disabled>确认改期</button>
+          </div>
+        </div>
+      </div>
+
       <!-- ================= 预约流程 ================= -->
       <div class="page" id="reserve">
         <div class="statusbar dark"><span>9:41</span><div class="sb-right"><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="currentColor"/><rect x="4.5" y="4.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="9" y="2" width="3" height="9" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="2.5" height="11" rx="1" fill="currentColor" opacity=".35"/></svg><svg width="15" height="11" viewBox="0 0 15 11"><path d="M7.5 9.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" fill="currentColor"/><path d="M7.5 5.5a5.5 5.5 0 014.9 3l-1.6.9a3.8 3.8 0 00-6.6 0l-1.6-.9a5.5 5.5 0 014.9-3z" fill="currentColor"/><path d="M7.5 1.5a9.5 9.5 0 018.5 5.2l-1.6.9A7.8 7.8 0 007.5 3.2 7.8 7.8 0 001.6 7.6L0 6.7A9.5 9.5 0 017.5 1.5z" fill="currentColor"/></svg><svg width="24" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="currentColor" opacity=".4"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.8" fill="currentColor"/><path d="M23.5 4v4a2.2 2.2 0 000-4z" fill="currentColor" opacity=".4"/></svg></div></div>
@@ -1831,6 +1863,70 @@ textarea.f-input{min-height:84px;resize:none;line-height:1.6}
           <div class="tips-box" style="margin-top:6px">💡 卡项支持跨门店使用；到期前 7 / 3 / 1 天自动提醒；正价核销每节积 1 积点，10 积点兑换 1 节课。</div>
         </div>
       </div>
+
+      <!-- ================= 成长值明细 ================= -->
+      <div class="page" id="growthDetail">
+        <div class="statusbar dark"><span>9:41</span><div class="sb-right"><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="currentColor"/><rect x="4.5" y="4.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="9" y="2" width="3" height="9" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="2.5" height="11" rx="1" fill="currentColor" opacity=".35"/></svg><svg width="15" height="11" viewBox="0 0 15 11"><path d="M7.5 9.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" fill="currentColor"/><path d="M7.5 5.5a5.5 5.5 0 014.9 3l-1.6.9a3.8 3.8 0 00-6.6 0l-1.6-.9a5.5 5.5 0 014.9-3z" fill="currentColor"/><path d="M7.5 1.5a9.5 9.5 0 018.5 5.2l-1.6.9a7.8 7.8 0 007.5 3.2 7.8 7.8 0 001.6 7.6L0 6.7A9.5 9.5 0 017.5 1.5z" fill="currentColor"/></svg><svg width="24" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="currentColor" opacity=".4"/><rect x="2.5" y="2.5" width="2.5" height="7" rx="1.8" fill="currentColor"/><path d="M23.5 4v4a2.2 2.2 0 000-4z" fill="currentColor" opacity=".4"/></svg></div></div>
+        <div class="navbar"><div class="nav-back" onclick="back()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="nav-home" onclick="goHome()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 10.5V20a1 1 0 001 1h4v-6h6v6h4a1 1 0 001-1v-9.5L12 3 4 10.5z" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/></svg></div><div class="nav-title">成长值明细</div></div>
+        <div class="page-body" style="padding:16px">
+          <div style="background:linear-gradient(135deg,#FF8A2A,#F04E00);border-radius:18px;padding:22px 18px;color:#fff;box-shadow:0 10px 26px rgba(255,107,0,.3);margin-bottom:16px">
+            <div style="font-size:13px;opacity:.9">当前等级</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+              <span style="font-size:28px;font-weight:900;background:rgba(255,255,255,.2);padding:4px 14px;border-radius:10px">★ 黑金会员</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin-top:16px"><span style="font-size:40px;font-weight:900">8,860</span><span style="font-size:13px;opacity:.85">成长值</span></div>
+            <div style="margin-top:12px;font-size:11.5px;opacity:.85;line-height:1.6">距下一等级「钻石会员」还需 <b style="color:#FFE0A0">1,140</b> 成长值</div>
+            <div style="margin-top:12px;height:8px;border-radius:4px;background:rgba(255,255,255,.25);overflow:hidden"><div style="width:88%;height:100%;background:#fff;border-radius:4px"></div></div>
+          </div>
+          <div class="block-title" style="margin-bottom:10px">成长值规则</div>
+          <div style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:16px;box-shadow:var(--shadow)">
+            <div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:22px;margin-right:12px">🛒</span><div style="flex:1"><div style="font-size:13.5px;font-weight:700">消费得成长值</div><div style="font-size:11.5px;color:var(--txt3);margin-top:3px">每消费 ¥1 获得 1 成长值</div></div><span style="font-size:13px;color:var(--orange);font-weight:800">+1/¥1</span></div>
+            <div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:22px;margin-right:12px">📅</span><div style="flex:1"><div style="font-size:13.5px;font-weight:700">签到得成长值</div><div style="font-size:11.5px;color:var(--txt3);margin-top:3px">每日签到 +5，连续 7 天额外 +30</div></div><span style="font-size:13px;color:var(--orange);font-weight:800">+5~35</span></div>
+            <div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:22px;margin-right:12px">✍️</span><div style="flex:1"><div style="font-size:13.5px;font-weight:700">评价得成长值</div><div style="font-size:11.5px;color:var(--txt3);margin-top:3px">每次服务评价 +20，带图文 +50</div></div><span style="font-size:13px;color:var(--orange);font-weight:800">+20~50</span></div>
+            <div style="display:flex;align-items:center;padding:10px 0"><span style="font-size:22px;margin-right:12px">🎁</span><div style="flex:1"><div style="font-size:13.5px;font-weight:700">邀请好友</div><div style="font-size:11.5px;color:var(--txt3);margin-top:3px">好友首次下单后获得其订单额 5%</div></div><span style="font-size:13px;color:var(--orange);font-weight:800">+5%</span></div>
+          </div>
+          <div class="block-title" style="margin-bottom:10px">最近变动记录</div>
+          <div id="growthLogList"></div>
+        </div>
+      </div>
+
+      <!-- ================= 积点明细 ================= -->
+      <div class="page" id="pointsDetail">
+        <div class="statusbar dark"><span>9:41</span><div class="sb-right"><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="currentColor"/><rect x="4.5" y="4.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="9" y="2" width="3" height="9" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="2.5" height="11" rx="1" fill="currentColor" opacity=".35"/></svg><svg width="15" height="11" viewBox="0 0 15 11"><path d="M7.5 9.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" fill="currentColor"/><path d="M7.5 5.5a5.5 5.5 0 014.9 3l-1.6.9a3.8 3.8 0 00-6.6 0l-1.6-.9a5.5 5.5 0 014.9-3z" fill="currentColor"/><path d="M7.5 1.5a9.5 9.5 0 018.5 5.2l-1.6.9a7.8 7.8 0 007.5 3.2 7.8 7.8 0 001.6 7.6L0 6.7A9.5 9.5 0 017.5 1.5z" fill="currentColor"/></svg><svg width="24" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="currentColor" opacity=".4"/><rect x="2.5" y="2.5" width="21" height="7" rx="1.8" fill="currentColor"/><path d="M23.5 4v4a2.2 2.2 0 000-4z" fill="currentColor" opacity=".4"/></svg></div></div>
+        <div class="navbar"><div class="nav-back" onclick="back()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="nav-home" onclick="goHome()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 10.5V20a1 1 0 001 1h4v-6h6v6h4a1 1 0 001-1v-9.5L12 3 4 10.5z" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/></svg></div><div class="nav-title">积点明细</div></div>
+        <div class="page-body" style="padding:16px">
+          <div style="background:linear-gradient(135deg,#4A8BFF,#2F6BFF);border-radius:18px;padding:22px 18px;color:#fff;box-shadow:0 10px 26px rgba(47,107,255,.3);margin-bottom:16px">
+            <div style="font-size:13px;opacity:.9">当前积点余额</div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin-top:8px"><span style="font-size:44px;font-weight:900">26</span><span style="font-size:14px;opacity:.85">积点</span></div>
+            <div style="display:flex;gap:12px;margin-top:14px">
+              <div style="flex:1;background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:900">+342</div><div style="font-size:11px;opacity:.85;margin-top:3px">累计获得</div></div>
+              <div style="flex:1;background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:900">-316</div><div style="font-size:11px;opacity:.85;margin-top:3px">累计消耗</div></div>
+            </div>
+            <div style="margin-top:14px;background:rgba(255,255,255,.15);border-radius:10px;padding:10px 14px;font-size:12px;line-height:1.6">💡 积点可在下单时抵扣现金（<b>100 积点 = ¥10</b>），也可兑换免费课程（<b>10 积点 = 1 节课</b>）</div>
+          </div>
+          <div class="cat-scroll" style="margin-bottom:12px">
+            <div class="chip on" onclick="setPointsFilter(this,'all')">全部</div>
+            <div class="chip" onclick="setPointsFilter(this,'in')">获得</div>
+            <div class="chip" onclick="setPointsFilter(this,'out')">消耗</div>
+          </div>
+          <div id="pointsLogList"></div>
+        </div>
+      </div>
+
+      <!-- ================= 优惠券列表 ================= -->
+      <div class="page" id="couponList">
+        <div class="statusbar dark"><span>9:41</span><div class="sb-right"><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="currentColor"/><rect x="4.5" y="4.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="9" y="2" width="3" height="9" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="2.5" height="11" rx="1" fill="currentColor" opacity=".35"/></svg><svg width="15" height="11" viewBox="0 0 15 11"><path d="M7.5 9.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" fill="currentColor"/><path d="M7.5 5.5a5.5 5.5 0 014.9 3l-1.6.9a3.8 3.8 0 00-6.6 0l-1.6-.9a5.5 5.5 0 014.9-3z" fill="currentColor"/><path d="M7.5 1.5a9.5 9.5 0 018.5 5.2l-1.6.9a7.8 7.8 0 007.5 3.2 7.8 7.8 0 001.6 7.6L0 6.7A9.5 9.5 0 017.5 1.5z" fill="currentColor"/></svg><svg width="24" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="currentColor" opacity=".4"/><rect x="2.5" y="2.5" width="21" height="7" rx="1.8" fill="currentColor"/><path d="M23.5 4v4a2.2 2.2 0 000-4z" fill="currentColor" opacity=".4"/></svg></div></div>
+        <div class="navbar"><div class="nav-back" onclick="back()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="nav-home" onclick="goHome()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 10.5V20a1 1 0 001 1h4v-6h6v6h4a1 1 0 001-1v-9.5L12 3 4 10.5z" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/></svg></div><div class="nav-title">我的优惠券</div></div>
+        <div class="page-body" style="padding:16px">
+          <div class="cat-scroll" style="margin-bottom:12px">
+            <div class="chip on" onclick="setCouponFilter(this,'usable')">可使用 (2)</div>
+            <div class="chip" onclick="setCouponFilter(this,'voucher')">券包 (1)</div>
+            <div class="chip" onclick="setCouponFilter(this,'expired')">已过期 (1)</div>
+          </div>
+          <div id="couponListBody"></div>
+        </div>
+      </div>
+
 
       <!-- ================= 首次评估表 ================= -->
       <div class="page" id="assessment">
@@ -3277,6 +3373,9 @@ function show(id, push=true){
   if(id==='empHome'){ renderRankMini(); renderEvalTaskSec(); }
   if(id==='empComplaint') renderComplaints();
   if(id==='empComplaintDetail') renderComplaintDetail();
+  if(id==='growthDetail') renderGrowthDetail();
+  if(id==='pointsDetail') renderPointsDetail();
+  if(id==='couponList') renderCouponList();
   if(id==='therapistList') renderTherapistList();
   if(id==='therapistDetail') renderTherapistDetail();
   if(id==='storeDetail') renderStoreDetail();
@@ -3881,6 +3980,138 @@ function renderStoreDetail(){
       <div style="padding:10px"><div style="font-size:13px;font-weight:800">${v.nm}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px"><span style="color:var(--orange);font-size:15px;font-weight:900">¥${v.price}</span><span style="font-size:11px;color:var(--txt3)">预约 ›</span></div></div>
     </div>`).join('');
 }
+
+/* ========== 成长值明细 ========== */
+const GROWTH_LOGS=[
+  {type:'in',title:'消费获得成长值',desc:'购买 运动损伤康复 · 15次卡',amount:4350,time:'2026-08-18 14:30'},
+  {type:'in',title:'签到获得成长值',desc:'连续签到第 7 天（额外奖励）',amount:35,time:'2026-08-17 09:00'},
+  {type:'in',title:'评价获得成长值',desc:'评价运动损伤康复服务（图文）',amount:50,time:'2026-08-15 17:20'},
+  {type:'in',title:'邀请好友获得成长值',desc:'好友 孙浩 首次下单 ¥4,350',amount:218,time:'2026-07-28 09:15'},
+  {type:'in',title:'消费获得成长值',desc:'购买 拉伸放松 · 10次卡',amount:1980,time:'2026-07-10 11:00'},
+  {type:'in',title:'签到获得成长值',desc:'每日签到',amount:5,time:'2026-07-09 09:05'},
+  {type:'in',title:'消费获得成长值',desc:'购买 Compex 电刺激仪',amount:3299,time:'2026-06-20 16:40'},
+  {type:'in',title:'邀请好友获得成长值',desc:'好友 周婷 首次下单 ¥3,299',amount:165,time:'2026-06-15 10:22'}
+];
+function renderGrowthDetail(){
+  const box=document.getElementById('growthLogList');
+  if(!box) return;
+  box.innerHTML=GROWTH_LOGS.map(l=>`
+    <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)">
+      <div style="width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:${l.type==='in'?'#FFF3E8':'#F5F5F5'}">${l.type==='in'?'📈':'📉'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:800;color:#222">${l.title}</div>
+        <div style="font-size:12px;color:var(--txt3);margin-top:3px">${l.desc}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:15px;font-weight:900;color:${l.type==='in'?'#F04E00':'#999'}">+${l.amount.toLocaleString()}</div>
+        <div style="font-size:11px;color:#bbb;margin-top:2px">${l.time.split(' ')[0]}</div>
+      </div>
+    </div>`).join('');
+}
+/* ========== 积点明细（独立页面） ========== */
+const POINTS_LOGS=[
+  {type:'in',title:'分享获得积点',desc:'好友 王磊 购买 3D 定制矫形鞋垫',amount:25,time:'2026-08-12 10:23'},
+  {type:'out',title:'购买服务消耗积点',desc:'运动损伤康复 · 单次抵扣',amount:-100,time:'2026-08-11 16:00'},
+  {type:'in',title:'分享获得积点',desc:'好友 赵敏 购买 拉伸放松 · 10次卡',amount:99,time:'2026-08-09 15:40'},
+  {type:'out',title:'购买商品消耗积点',desc:'康复护踝抵扣',amount:-50,time:'2026-08-05 11:30'},
+  {type:'in',title:'分享获得积点',desc:'好友 孙浩 购买 运动损伤康复 · 15次卡',amount:218,time:'2026-07-28 09:15'},
+  {type:'in',title:'签到奖励积点',desc:'连续签到 7 天奖励',amount:30,time:'2026-07-20 09:00'},
+  {type:'out',title:'兑换课程消耗积点',desc:'兑换 拉伸放松 1 节课',amount:-10,time:'2026-07-15 14:00'},
+  {type:'in',title:'新客注册赠送积点',desc:'平台新用户注册礼包',amount:50,time:'2026-06-01 10:00'},
+  {type:'out',title:'下单抵扣消耗积点',desc:'Compex 电刺激仪抵扣 ¥16.5',amount:-165,time:'2026-06-10 16:30'},
+  {type:'in',title:'评价奖励积点',desc:'完成服务评价（带图）',amount:20,time:'2026-05-28 18:00'}
+];
+let curPointsFilter='all';
+function setPointsFilter(el,f){
+  curPointsFilter=f;
+  el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderPointsDetail();
+}
+function renderPointsDetail(){
+  const box=document.getElementById('pointsLogList');
+  if(!box) return;
+  const list=POINTS_LOGS.filter(l=>curPointsFilter==='all'||l.type===curPointsFilter);
+  box.innerHTML=list.map(l=>`
+    <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;display:flex;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)">
+      <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:${l.type==='in'?'#E9F9F1':'#FFF0F0'}">${l.type==='in'?'🎁':'💸'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:14px;font-weight:800;color:#222">${l.title}</span>
+          <span style="font-size:16px;font-weight:900;color:${l.type==='in'?'#00A85C':'#F04E00'}">${l.amount>0?'+':''}${l.amount} 积点</span>
+        </div>
+        <div style="font-size:12px;color:var(--txt3);margin-top:4px">${l.desc}</div>
+        <div style="font-size:11px;color:#bbb;margin-top:3px">${l.time}</div>
+      </div>
+    </div>`).join('') || '<div class="empty" style="padding:40px 0"><div class="eic">🏆</div>该分类下暂无记录</div>';
+}
+/* ========== 优惠券列表 ========== */
+const MY_COUPONS=[
+  {id:'cp1',name:'满减券',value:'¥50',condition:'满 ¥299 可用',scope:'全平台通用',expire:'2026-10-15',status:'usable',color:'#FF8A2A'},
+  {id:'cp2',name:'新人专享券',value:'¥100',condition:'首单任意金额可用',scope:'仅限服务类订单',expire:'2026-09-30',status:'usable',color:'#4A8BFF'},
+  {id:'cp3',name:'续费折扣券',value:'8折',condition:'续费次卡可用',scope:'运动损伤/拉伸放松卡',expire:'2026-08-01',status:'expired',color:'#999'},
+  {id:'cp4',type:'voucher',name:'每月券包',value:'200',cond:'每月平台赠送 · 结算时自动抵扣',expire:'2026-09-30 当月有效',status:'voucher'}
+];
+let curCouponFilter='usable';
+function setCouponFilter(el,f){
+  curCouponFilter=f;
+  el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderCouponList();
+}
+function renderCouponList(){
+  const box=document.getElementById('couponListBody');
+  if(!box) return;
+  const list=MY_COUPONS.filter(c=>{
+    if(curCouponFilter==='usable') return c.status==='usable';
+    if(curCouponFilter==='voucher') return c.status==='voucher';
+    return c.status==='expired';
+  });
+  box.innerHTML=list.map(c=>{
+    if(c.type==='voucher'){
+      return `
+      <div class="cp-voucher">
+        <div class="cpv-top">
+          <div class="cpv-ic">🎟️</div>
+          <div class="cpv-mid">
+            <div class="cpv-name">${c.name}</div>
+            <div class="cpv-cond">${c.cond}</div>
+          </div>
+          <div class="cpv-val"><small>¥</small>${c.value}</div>
+        </div>
+        <div class="cpv-bot">
+          <span class="cpv-exp">${c.expire}</span>
+          ${c.claimed?'<span style="color:#00A85C;font-size:12.5px;font-weight:800">✓ 已领取</span>':'<button class="btn-primary" style="padding:6px 18px;font-size:12px" onclick="claimMonthlyVoucher(\'${c.id}\')">立即领取</button>'}
+        </div>
+      </div>`;
+    }
+    const isExpired=c.status==='expired';
+    return `
+    <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:12px${isExpired?';opacity:.55':''}">
+      <div style="background:linear-gradient(135deg,${isExpired?'#ccc':c.color},${isExpired?'#aaa':c.color+'dd'});padding:20px 18px;color:#fff">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;opacity:.85">${c.name}</div><div style="font-size:32px;font-weight:900;margin-top:4px">${c.value}</div></div>
+          <div style="text-align:right"><div style="font-size:11px;opacity:.85;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:999px">${isExpired?'已过期':'可使用'}</div><div style="font-size:11px;opacity:.75;margin-top:6px">${c.expire}</div></div>
+        </div>
+        <div style="margin-top:12px;font-size:11.5px;opacity:.85">${c.condition} · ${c.scope}</div>
+      </div>
+      <div style="background:#fff;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-top:1px dashed rgba(255,255,255,.5);margin-top:-1px;position:relative;z-index:1">
+        <span style="font-size:12px;color:var(--txt3)">${isExpired?'已过期，无法使用':'点击去使用 ›'}</span>
+        <button class="${isExpired?'btn-ghost':'btn-primary'}" style="padding:6px 16px;font-size:12px" onclick="${isExpired?"toast('该优惠券已过期')":"toast('已选用：'+c.name)"}">${isExpired?'已过期':'立即使用'}</button>
+      </div>
+      <div style="position:absolute;left:-9px;top:50%;transform:translateY(-50%);width:18px;height:18px;background:#F7F8FA;border-radius:50%"></div>
+      <div style="position:absolute;right:-9px;top:50%;transform:translateY(-50%);width:18px;height:18px;background:#F7F8FA;border-radius:50%"></div>
+    </div>`;
+  }).join('') || '<div class="empty" style="padding:40px 0"><div class="eic">🎫</div>该分类下暂无优惠券</div>';
+}
+
+function claimMonthlyVoucher(id){
+  const c=MY_COUPONS.find(x=>x.id===id);
+  if(!c||c.status!=='voucher'||c.claimed) return;
+  c.claimed=true;
+  renderCouponList();
+  toast('已领取「'+c.name+'」，结算时自动抵扣');
+}
 /* ========== 我的预约（用户端预约记录） ========== */
 const USER_BOOKINGS=[
   {id:'b1',serviceKey:'injury',svc:'运动损伤康复 · 右踝扭伤',store:'长沙谷山店',therapist:'王兴权',therapistAvatar:'assets/avatar1.jpg',date:'2026-08-21',week:'周五',time:'09:00-10:00',status:'wait',times:'第 6 次 / 共 15 次'},
@@ -3901,7 +4132,7 @@ function bookingCard(b){
   const st=APPT_STATUS[b.status]||APPT_STATUS.done;
   let actions='';
   if(b.status==='wait'){
-    actions='<button class="btn-ghost" style="flex:1" onclick="toast(\'改期请重新选择时段\')">改期</button>'
+    actions='<button class="btn-ghost" style="flex:1" onclick="openReschedule(\''+b.id+'\')">改期</button>'
           +'<button class="btn-ghost" style="flex:1;color:#E8456B" onclick="toast(\'已取消该预约\')">取消</button>';
   } else if(b.status==='ing'){
     actions='<button class="btn-primary" style="flex:1" onclick="openArchive(\''+b.serviceKey+'\')">查看康复档案</button>'
@@ -3932,6 +4163,92 @@ function renderMyBookings(){
   if(!box) return;
   const list=USER_BOOKINGS.filter(b=> curBookingStatus==='all'||b.status===curBookingStatus);
   box.innerHTML = list.length ? list.map(bookingCard).join('') : '<div class="empty"><div class="eic">📭</div>该状态下暂无预约</div>';
+}
+
+/* ========== 改期弹窗 ========== */
+let reschBooking=null, reschDate='', reschTime='';
+function openReschedule(id){
+  const b=USER_BOOKINGS.find(x=>x.id===id);
+  if(!b){ toast('未找到预约记录'); return; }
+  if(b.status!=='wait'){ toast('仅待服务状态的预约可改期'); return; }
+  reschBooking=b;
+  /* 默认选中原日期，如果原日期在未来7天中 */
+  const found=BOOK_DATES.find(d=>d.d===b.date);
+  reschDate=found?b.d:BOOK_DATES[0].d;
+  reschTime='';
+  /* 填写原预约信息 */
+  document.getElementById('reschOrigInfo').innerHTML='📋 原预约：'+b.date+' '+b.week+' '+b.time+' · '+b.svc+'<br>📍 '+b.store+' · 康复师 '+b.therapist;
+  openSheet('rescheduleSheet');
+  renderReschedule();
+}
+function renderReschedule(){
+  renderReschCal();
+  renderReschTime();
+  updateReschConfirm();
+}
+function renderReschCal(){
+  const box=document.getElementById('reschCalWeek');
+  if(!box) return;
+  const wk=['一','二','三','四','五','六','日'];
+  let html=''; wk.forEach(w=>{html+='<div class="cw">'+w+'</div>';});
+  BOOK_DATES.forEach(d=>{
+    const isPast=isDateBeforeToday(d.d);
+    html+='<div class="cd '+(reschDate===d.d?'on':'')+' '+(isPast?'off':'')+'" '+(isPast?'':'onclick="pickReschDate(\''+d.d+'\')"')+'>'+d.t+'<b>'+d.w+'</b></div>';
+  });
+  box.innerHTML=html;
+}
+function isDateBeforeToday(dateStr){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const d=new Date(dateStr); d.setHours(0,0,0,0);
+  return d<today;
+}
+function pickReschDate(d){ reschDate=d; reschTime=''; renderReschedule(); }
+function renderReschTime(){
+  const grid=document.getElementById('reschTimeGrid');
+  if(!grid) return;
+  const therapist=reschBooking?reschBooking.therapist:'';
+  const avail=getAvailSlots(therapist,reschDate);
+  /* 排除当前预约自身占用的时段（改期时原时段应可被重新选或释放） */
+  grid.innerHTML=BOOK_SLOTS.map(function(s,i){
+    const end=slotRange(s,60).end;
+    const isOrig=(reschBooking&&reschBooking.time===s+'-'+end);
+    const off=avail[i]===0&&!isOrig;
+    const on=reschTime===s;
+    return '<div class="time-slot '+(off?'off':'')+' '+(on?'on':'')+'" '+(off?'':'onclick="pickReschTime(\''+s+'\')"')+'>'+s+'<span class="s2">'+(isOrig?'当前':off?'已约满':end)+'</span></div>';
+  }).join('');
+  const tip=document.getElementById('reschConflictTip');
+  if(tip) tip.style.display=(reschTime&&avail[BOOK_SLOTS.indexOf(reschTime)]===0)?'block':'none';
+}
+function pickReschTime(s){ reschTime=s; renderReschedule(); }
+function updateReschConfirm(){
+  const btn=document.getElementById('reschConfirmBtn');
+  if(!btn) return;
+  btn.disabled=!reschDate||!reschTime;
+}
+function confirmReschedule(){
+  if(!reschBooking||!reschDate||!reschTime){ toast('请选择新的日期和时段'); return; }
+  /* 更新预约数据 */
+  const dateObj=BOOK_DATES.find(d=>d.d===reschDate);
+  const end=slotRange(reschTime,60).end;
+  const oldDate=reschBooking.date;
+  const oldTimeStart=reschBooking.time.split('-')[0];
+  /* 释放原时段占用 */
+  if(reschBooking.therapist){
+    const tb=THERAPIST_BOOKINGS[reschBooking.therapist];
+    if(tb&&tb[oldDate]){
+      const idx=tb[oldDate].indexOf(oldTimeStart);
+      if(idx>=0) tb[oldDate].splice(idx,1);
+    }
+  }
+  /* 写入新数据 */
+  reschBooking.date=reschDate;
+  reschBooking.week=dateObj?dateObj.w:'';
+  reschBooking.time=reschTime+'-'+end;
+  /* 占用新时段 */
+  occupyTherapist(reschBooking.therapist,reschDate,reschTime);
+  closeSheet('rescheduleSheet');
+  renderMyBookings();
+  toast('✅ 改期成功！新时间：'+reschDate+' '+reschTime+'-'+end);
 }
 
 let curRateBooking=null, curRateValue=5;
